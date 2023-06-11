@@ -1,0 +1,39 @@
+logger:
+  path: "./logs/"
+  file: "{Y-m-d}.log"
+  stdout: true
+  level: "all"
+  rotateSize: "100M"
+  rotateBackupLimit: 10
+  rotateBackupExpire: "10d"
+  rotateBackupCompress: 9
+  rotateCheckInterval: "24h"
+
+database:
+  default:
+    host: "127.0.0.1"
+    port: "3306"
+    user: "guoshaofm"
+    name: "guoshaofmdb"
+    pass: "qazxsw"
+    type: "mysql"
+    debug: "true"
+    weight: "100"
+    createdAt: "true"
+    updatedAt: "true"
+    charset: "utf8"
+    maxIdle: "10"
+    maxOpen: "100"
+    maxLifetime: "30s"
+
+redis:
+  default:
+    address: 127.0.0.1:6379
+    db: 1
+    pass: 123456
+
+elastic:
+  host: "http://127.0.0.1"
+  port: "9200"
+  username: "elastic"
+  password: "qazxsw"
