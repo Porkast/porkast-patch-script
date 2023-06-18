@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/feed"
 	"os"
 
@@ -19,29 +20,42 @@ var (
 
 	FeedChannelAuthorPatch = gcmd.Command{
 		Name:  "FeedChannelAuthorPatch",
-		Usage: "main",
+		Usage: "patch",
 		Brief: "start guoshao fm FeedChannelAuthorPatch",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
-            initConfig()
-            g.Log().Line().Debug(ctx, "start guoshao fm FeedChannelAuthorPatch")
-            feed.PatchFeedChannelAuthor(ctx)
+			initConfig()
+			g.Log().Line().Debug(ctx, "start guoshao fm FeedChannelAuthorPatch")
+			feed.PatchFeedChannelAuthor(ctx)
 			return nil
 		},
 	}
 
 	FeedItemAuthorPatch = gcmd.Command{
 		Name:  "FeedItemAuthorPatch",
-		Usage: "main",
+		Usage: "patch",
 		Brief: "start guoshao fm FeedItemAuthorPatch",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
-            initConfig()
-            g.Log().Line().Debug(ctx, "start guoshao fm FeedItemAuthorPatch")
-            feed.PatchFeedItemAuthor(ctx)
+			initConfig()
+			g.Log().Line().Debug(ctx, "start guoshao fm FeedItemAuthorPatch")
+			feed.PatchFeedItemAuthor(ctx)
+			return nil
+		},
+	}
+
+	FeedChannelItemTotalCountPatch = gcmd.Command{
+		Name:  "FeedChannelItemTotalCountPatch",
+		Usage: "patch",
+		Brief: "start guoshao fm feed total count patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			cache.InitCache(ctx)
+			g.Log().Line().Debug(ctx, "start guoshao fm feed total count patch")
+			feed.SetZHChannelTotalCountToCache(ctx)
+			feed.SetZHItemTotalCountToCache(ctx)
 			return nil
 		},
 	}
 )
-
 
 func initConfig() {
 	if os.Getenv("env") == "dev" {

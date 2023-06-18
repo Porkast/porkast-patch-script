@@ -38,3 +38,10 @@ func GetFeedItemsByChannelId(ctx context.Context, channelId string) (itemList []
 
 	return
 }
+
+func GetFeedItemCountByChannelId(ctx context.Context, channelId string) (count int, err error) {
+
+	count, err = FeedItem.Ctx(ctx).Where("channel_id=?", channelId).Count()
+
+	return
+}

@@ -9,7 +9,11 @@ import (
 )
 
 func main() {
-	err := cmd.Main.AddCommand(&cmd.FeedChannelAuthorPatch, &cmd.FeedItemAuthorPatch)
+	err := cmd.Main.AddCommand(
+		&cmd.FeedChannelAuthorPatch,
+		&cmd.FeedItemAuthorPatch,
+		&cmd.FeedChannelItemTotalCountPatch,
+	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)
 	}

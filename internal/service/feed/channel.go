@@ -2,9 +2,13 @@ package feed
 
 import (
 	"context"
+	"guoshao-fm-patch/internal/consts"
 	"guoshao-fm-patch/internal/model/entity"
+	"guoshao-fm-patch/internal/service/cache"
+	"guoshao-fm-patch/internal/service/internal/dao"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 func PatchFeedChannelAuthor(ctx context.Context) {
@@ -30,4 +34,20 @@ func PatchFeedChannelAuthor(ctx context.Context) {
 		}
 	}
 
+}
+
+func SetZHChannelTotalCountToCache(ctx context.Context) (err error) {
+	var (
+		totalCount int
+	)
+
+	totalCount, err = dao.GetZHFeedChannelTotalCount(ctx)
+	if err != nil {
+		g.Log().Line().Error(ctx, "Get feed channel total count failed : ", err)
+		return
+	}
+
+	g.Log().Line().Info(ctx, "The all ZH channel total count is ", totalCount)
+	cache.SetCache(ctx, gconv.String(consts.FEED_CHANNEL_TOTAL_COUNT), gconv.String(totalCount), 0)
+	return
 }

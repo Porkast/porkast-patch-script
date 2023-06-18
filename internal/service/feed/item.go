@@ -2,12 +2,16 @@ package feed
 
 import (
 	"context"
+	"guoshao-fm-patch/internal/consts"
 	"guoshao-fm-patch/internal/model/entity"
+	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/internal/dao"
 	"sync"
+	"sync/atomic"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/grpool"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 func PatchFeedItemAuthor(ctx context.Context) {
@@ -57,4 +61,32 @@ func PatchFeedItemAuthor(ctx context.Context) {
 	}
 	g.Log().Line().Infof(ctx, "start patch with pool workers %d, jobs %d ", pool.Size(), pool.Jobs())
 	wg.Wait()
+}
+
+func SetZHItemTotalCountToCache(ctx context.Context) (err error) {
+	var (
+		totalCount      int64
+		feedChannelList []entity.FeedChannel
+	)
+
+	wg := sync.WaitGroup{}
+	pool := grpool.New(100)
+	feedChannelList, err = dao.GetZHFeedChannelList(ctx)
+	for _, feedChannel := range feedChannelList {
+		feedChannelTemp := feedChannel
+		wg.Add(1)
+		pool.Add(ctx, func(ctx context.Context) {
+			defer wg.Done()
+			count, err := dao.GetFeedItemCountByChannelId(ctx, feedChannelTemp.Id)
+			if err == nil {
+				g.Log().Line().Infof(ctx, "The channel %s item total count is %d", feedChannelTemp.Title, count)
+				atomic.AddInt64(&totalCount, gconv.Int64(count))
+			}
+		})
+	}
+
+	wg.Wait()
+	g.Log().Line().Infof(ctx, "The all ZH items total count is %d", totalCount)
+	cache.SetCache(ctx, gconv.String(consts.FEED_ITEM_TOTAL_COUNT), gconv.String(totalCount), 0)
+	return
 }
