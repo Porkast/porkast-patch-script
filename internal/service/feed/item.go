@@ -3,14 +3,17 @@ package feed
 import (
 	"context"
 	"guoshao-fm-patch/internal/consts"
+	"guoshao-fm-patch/internal/dto"
 	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/internal/dao"
 	"sync"
 	"sync/atomic"
 
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/grpool"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -88,5 +91,41 @@ func SetZHItemTotalCountToCache(ctx context.Context) (err error) {
 	wg.Wait()
 	g.Log().Line().Infof(ctx, "The all ZH items total count is %d", totalCount)
 	cache.SetCache(ctx, gconv.String(consts.FEED_ITEM_TOTAL_COUNT), gconv.String(totalCount), 0)
+	return
+}
+
+func SetLatestFeedItems(ctx context.Context) (err error) {
+	var (
+		startDate    *gtime.Time
+		startDateStr string
+		endDate      *gtime.Time
+		endDateStr   string
+		itemList     []dto.FeedItem
+		itemListJson *gjson.Json
+	)
+
+	startDate = gtime.Now().StartOfDay()
+	endDate = gtime.Now().EndOfDay()
+
+	startDateStr = startDate.ISO8601()
+	endDateStr = endDate.ISO8601()
+
+	itemList = dao.GetFeedItemListByPubDate(ctx, startDateStr, endDateStr)
+	if err != nil {
+		g.Log().Line().Error(ctx, "Get latest feed items failed: ", err)
+		return
+	}
+
+	if len(itemList) == 0 {
+		return
+	}
+
+	itemListJson = gjson.New(itemList)
+	if err != nil {
+		g.Log().Line().Error(ctx, "Decode feed item list to json failed", err)
+		return
+	}
+	cache.SetCache(ctx, gconv.String(consts.TODAY_FEED_ITEM_LIST), itemListJson.MustToJsonString(), 0)
+
 	return
 }

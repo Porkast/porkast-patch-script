@@ -7,8 +7,11 @@ package dao
 import (
 	"context"
 	"errors"
+	"guoshao-fm-patch/internal/dto"
 	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/internal/dao/internal"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 // feedItemDao is the data access object for table feed_item.
@@ -42,6 +45,18 @@ func GetFeedItemsByChannelId(ctx context.Context, channelId string) (itemList []
 func GetFeedItemCountByChannelId(ctx context.Context, channelId string) (count int, err error) {
 
 	count, err = FeedItem.Ctx(ctx).Where("channel_id=?", channelId).Count()
+
+	return
+}
+
+func GetFeedItemListByPubDate(ctx context.Context, startDate, endDate string) (entities []dto.FeedItem) {
+
+	g.Model("feed_item fi").
+		InnerJoin("feed_channel fc", "fc.id=fi.channel_id").
+		Fields("fi.title, fi.link, fi.pub_date, fi.author, fi.input_date, fi.image_url, fi.enclosure_url, fi.enclosure_type, fi.enclosure_length, fi.duration, fi.episode, fi.explicit, fi.season, fi.episodeType, fi.description, fc.image_url as channel_image_url, fc.feed_link, fc.title as channel_title, fc.author as channelAuthor").
+		Where("fi.pub_date>=?", startDate).
+		Where("fi.pub_date<?", endDate).
+		Scan(&entities)
 
 	return
 }

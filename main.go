@@ -13,6 +13,7 @@ func main() {
 		&cmd.FeedChannelAuthorPatch,
 		&cmd.FeedItemAuthorPatch,
 		&cmd.FeedChannelItemTotalCountPatch,
+		&cmd.SetLatestItemToCachePatch,
 	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)

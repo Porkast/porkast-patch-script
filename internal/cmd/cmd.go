@@ -55,6 +55,19 @@ var (
 			return nil
 		},
 	}
+
+	SetLatestItemToCachePatch = gcmd.Command{
+		Name:  "SetLatestItemToCachePatch",
+		Usage: "patch",
+		Brief: "start guoshao fm SetLatestItemToCachePatch patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			cache.InitCache(ctx)
+			feed.SetLatestFeedItems(ctx)
+			g.Log().Line().Debug(ctx, "start guoshao fm SetLatestItemToCachePatch patch")
+			return nil
+		},
+	}
 )
 
 func initConfig() {
