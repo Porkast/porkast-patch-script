@@ -6,6 +6,7 @@ import (
 	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/internal/dao"
+	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -48,6 +49,9 @@ func SetZHChannelTotalCountToCache(ctx context.Context) (err error) {
 	}
 
 	g.Log().Line().Info(ctx, "The all ZH channel total count is ", totalCount)
-	cache.SetCache(ctx, gconv.String(consts.FEED_CHANNEL_TOTAL_COUNT), gconv.String(totalCount), 0)
+	err = cache.SetCache(ctx, gconv.String(consts.FEED_CHANNEL_TOTAL_COUNT), gconv.String(totalCount), int(time.Second*60*60))
+	if err != nil {
+		panic(err)
+	}
 	return
 }
