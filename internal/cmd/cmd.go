@@ -2,13 +2,17 @@ package cmd
 
 import (
 	"context"
+	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/feed"
+	"guoshao-fm-patch/internal/service/search"
 	"os"
+	"sync"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/genv"
+	"github.com/gogf/gf/v2/os/grpool"
 )
 
 var (
@@ -65,6 +69,62 @@ var (
 			cache.InitCache(ctx)
 			feed.SetLatestFeedItems(ctx)
 			g.Log().Line().Debug(ctx, "start guoshao fm SetLatestItemToCachePatch patch")
+			return nil
+		},
+	}
+
+	AddZincsearchIndex = gcmd.Command{
+		Name:  "AddZincsearchIndex",
+		Usage: "patch",
+		Brief: "start guoshao fm AddZincsearchIndex patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			search.InitClient(ctx)
+			search.GetClient(ctx).CreateIndex(search.CREATE_FEED_ITEM_INDEX_REQUEST)
+			search.GetClient(ctx).CreateIndex(search.CREATE_FEED_CHANNEL_INDEX_REQUEST)
+			g.Log().Line().Debug(ctx, "start guoshao fm AddZincsearchIndex patch")
+			return nil
+		},
+	}
+
+	PatchZincsearchData = gcmd.Command{
+		Name:  "PatchZincsearchData",
+		Usage: "patch",
+		Brief: "start guoshao fm PatchZincsearchData",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			search.InitClient(ctx)
+			g.Log().Line().Debug(ctx, "start guoshao fm PatchZincsearchData patch")
+
+			feedChannelList := make([]entity.FeedChannel, 0)
+			err = g.Model("feed_channel fc").Scan(&feedChannelList)
+			if err != nil {
+				g.Log().Line().Error(ctx, err)
+				return
+			}
+
+			g.Log().Line().Infof(ctx, "rss feed channel total count : %d", len(feedChannelList))
+			wg := sync.WaitGroup{}
+			pool := grpool.New(10)
+			for _, feedChannel := range feedChannelList {
+				wg.Add(1)
+				feedChannelTemp := feedChannel
+				pool.Add(ctx, func(ctx context.Context) {
+					defer wg.Done()
+					feedItemList := make([]entity.FeedItem, 0)
+					err := g.Model("feed_item fi").
+						Where("fi.channel_id=?", feedChannelTemp.Id).
+						Scan(&feedItemList)
+					if err != nil {
+						g.Log().Line().Error(ctx, err)
+					}
+					feed.SetFeedChannelToZincsearch(ctx, feedChannelTemp)
+					feed.SetFeedItemsToZincsearch(ctx, feedChannelTemp, feedItemList)
+					g.Log().Line().Infof(ctx, "channel %s total item count : %d", feedChannelTemp.Title, len(feedItemList))
+				})
+			}
+			g.Log().Line().Infof(ctx, "start patch with pool workers %d, jobs %d ", pool.Size(), pool.Jobs())
+			wg.Wait()
 			return nil
 		},
 	}

@@ -7,10 +7,11 @@ import (
 	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/internal/dao"
+	"guoshao-fm-patch/internal/service/search"
 	"sync"
 	"sync/atomic"
-	"time"
 
+	"github.com/anaskhan96/soup"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/grpool"
@@ -91,10 +92,10 @@ func SetZHItemTotalCountToCache(ctx context.Context) (err error) {
 
 	wg.Wait()
 	g.Log().Line().Infof(ctx, "The all ZH items total count is %d", totalCount)
-	err = cache.SetCache(ctx, gconv.String(consts.FEED_ITEM_TOTAL_COUNT), gconv.String(totalCount), int(time.Second*60*60))
-    if err != nil {
-        panic(err)
-    }
+	err = cache.SetCache(ctx, gconv.String(consts.FEED_ITEM_TOTAL_COUNT), gconv.String(totalCount), int(24*60*60))
+	if err != nil {
+		panic(err)
+	}
 	return
 }
 
@@ -132,4 +133,33 @@ func SetLatestFeedItems(ctx context.Context) (err error) {
 	cache.SetCache(ctx, gconv.String(consts.TODAY_FEED_ITEM_LIST), itemListJson.MustToJsonString(), 0)
 
 	return
+}
+
+func SetFeedItemsToZincsearch(ctx context.Context, feedChannel entity.FeedChannel, feedItemList []entity.FeedItem) {
+
+	if len(feedItemList) == 0 {
+		return
+	}
+	esFeedItemList := make([]entity.FeedItemESData, 0)
+	for _, feedItem := range feedItemList {
+		esFeedItem := entity.FeedItemESData{}
+		gconv.Struct(feedItem, &esFeedItem)
+		if esFeedItem.Author == "" {
+			esFeedItem.Author = feedChannel.Author
+		}
+		rootDocs := soup.HTMLParse(esFeedItem.Description)
+		esFeedItem.TextDescription = rootDocs.FullText()
+		esFeedItem.ChannelImageUrl = feedChannel.ImageUrl
+		esFeedItem.ChannelTitle = feedChannel.Title
+		esFeedItem.FeedLink = feedChannel.FeedLink
+		esFeedItem.Language = feedChannel.Language
+		esFeedItemList = append(esFeedItemList, esFeedItem)
+	}
+
+	bulk := search.FeedItemBulk{
+		Index:   "feed_item",
+		Records: esFeedItemList,
+	}
+
+	search.GetClient(ctx).InsertFeedItemBulk(bulk)
 }

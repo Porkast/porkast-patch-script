@@ -14,6 +14,8 @@ func main() {
 		&cmd.FeedItemAuthorPatch,
 		&cmd.FeedChannelItemTotalCountPatch,
 		&cmd.SetLatestItemToCachePatch,
+		&cmd.AddZincsearchIndex,
+		&cmd.PatchZincsearchData,
 	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)
