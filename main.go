@@ -16,6 +16,7 @@ func main() {
 		&cmd.SetLatestItemToCachePatch,
 		&cmd.AddZincsearchIndex,
 		&cmd.PatchZincsearchData,
+		&cmd.DuplicatedChannelPatch,
 	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)

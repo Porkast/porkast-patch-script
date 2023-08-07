@@ -9,7 +9,9 @@ import (
 	"guoshao-fm-patch/internal/service/search"
 
 	"github.com/anaskhan96/soup"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -63,4 +65,51 @@ func SetFeedChannelToZincsearch(ctx context.Context, feedChannel entity.FeedChan
 	rootDocs := soup.HTMLParse(esFeedChannel.ChannelDesc)
 	esFeedChannel.TextChannelDesc = rootDocs.FullText()
 	search.GetClient(ctx).InsertFeedChannel(esFeedChannel)
+}
+
+func FilterDuplicatedChannelInfo(ctx context.Context) {
+	var (
+		err                   error
+		totalCount            int
+		offset                int
+		limit                 = 1000
+		channelInfoList       []entity.FeedChannel
+		channelInfoMap        map[string]entity.FeedChannel
+		duplicatedChannelList []DuplicatedChannelInfo
+	)
+
+	totalCount, err = dao.GetZHFeedChannelTotalCount(ctx)
+	if err != nil {
+		panic(err)
+	}
+	g.Log().Line().Infof(ctx, "The channel info total count is %d", totalCount)
+	channelInfoMap = make(map[string]entity.FeedChannel)
+	duplicatedChannelList = make([]DuplicatedChannelInfo, 0)
+	for offset < totalCount {
+		channelInfoList, err = dao.GetChannelList(ctx, offset, limit)
+		offset = offset + limit
+		for _, channleInfoItem := range channelInfoList {
+			key := channleInfoItem.Link + channleInfoItem.Title
+			existChannelInfo := channelInfoMap[key]
+			if existChannelInfo.Id == "" {
+				channelInfoMap[key] = channleInfoItem
+			} else {
+				duplicatedInfo := DuplicatedChannelInfo{
+					Id:        channleInfoItem.Id,
+					Id2:       existChannelInfo.Id,
+					Link:      channleInfoItem.Link,
+					Link2:     existChannelInfo.Link,
+					Title:     channleInfoItem.Title,
+					Title2:    existChannelInfo.Title,
+					FeedLink:  channleInfoItem.FeedLink,
+					FeedLink2: existChannelInfo.FeedLink,
+				}
+				duplicatedChannelList = append(duplicatedChannelList, duplicatedInfo)
+			}
+		}
+	}
+
+	resultJsonStr := gjson.MustEncodeString(duplicatedChannelList)
+	gfile.PutContents("./duplicated_channle_info.json", resultJsonStr)
+	g.Log().Line().Infof(ctx, "The duplicated channel count is %d", len(duplicatedChannelList))
 }

@@ -128,6 +128,19 @@ var (
 			return nil
 		},
 	}
+
+	DuplicatedChannelPatch = gcmd.Command{
+		Name:  "DuplicatedChannelPatch",
+		Usage: "patch",
+		Brief: "start guoshao fm DuplicatedChannelPatch patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			g.Log().Line().Debug(ctx, "start guoshao fm DuplicatedChannelPatch patch")
+			g.Log().Line().Debug(ctx, "db host %s", g.DB().GetConfig().Host)
+			feed.FilterDuplicatedChannelInfo(ctx)
+			return nil
+		},
+	}
 )
 
 func initConfig() {

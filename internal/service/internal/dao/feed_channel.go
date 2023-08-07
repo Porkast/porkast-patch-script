@@ -27,7 +27,7 @@ var (
 func GetFeedChannelTotalCount(ctx context.Context) (count int, err error) {
 
 	count, err = FeedChannel.Ctx(ctx).Count()
-	
+
 	return
 }
 
@@ -39,6 +39,13 @@ func GetZHFeedChannelTotalCount(ctx context.Context) (count int, err error) {
 func GetZHFeedChannelList(ctx context.Context) (entities []entity.FeedChannel, err error) {
 
 	err = FeedChannel.Ctx(ctx).Where("language like 'zh%'").Scan(&entities)
+
+	return
+}
+
+func GetChannelList(ctx context.Context, offset, limit int) (entities []entity.FeedChannel, err error) {
+
+	err = FeedChannel.Ctx(ctx).Offset(offset).Limit(limit).Scan(&entities)
 
 	return
 }
