@@ -64,3 +64,29 @@ func (c Client) doPost(ctx context.Context, url, body string) (err error) {
 
 	return
 }
+
+func (c Client) doPut(ctx context.Context, url, body string) (err error) {
+
+	resp, err := c.httpClient.Put(ctx, url, body)
+	defer func(resp *gclient.Response) {
+		if rec := recover(); rec != nil {
+			if resp == nil {
+				g.Log().Line().Error(ctx, fmt.Sprintf("do put failed: \n%s\n", rec))
+			} else {
+				g.Log().Line().Error(ctx, fmt.Sprintf("do put failed with response %s: \n%s\n", resp.ReadAllString(), rec))
+			}
+		}
+		if resp != nil {
+			resp.Close()
+		}
+	}(resp)
+
+	if err != nil {
+		g.Log().Line().Error(ctx, err)
+	} else if resp != nil && resp.StatusCode != 200 {
+		err = errors.New(resp.ReadAllString())
+		g.Log().Line().Error(ctx, err)
+	}
+
+	return
+}

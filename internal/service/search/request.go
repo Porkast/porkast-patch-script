@@ -10,7 +10,7 @@ import (
 	"github.com/gogf/gf/v2/net/gclient"
 )
 
-func (c Client) CreateIndex( body string) (err error) {
+func (c Client) CreateIndex(body string) (err error) {
 
 	apiUrl := fmt.Sprintf(baseUrl + "/api/index")
 	resp, err := c.httpClient.Post(c.Ctx, apiUrl, body)
@@ -39,9 +39,9 @@ func (c Client) CreateIndex( body string) (err error) {
 
 func (c Client) InsertFeedChannel(searchChannelModel entity.FeedChannelESData) (err error) {
 
-	apiUrl := baseUrl + "/api/feed_channel/_doc"
+	apiUrl := baseUrl + "/api/feed_channel/_doc/" + searchChannelModel.Id
 	body := gjson.MustEncodeString(searchChannelModel)
-	err = c.doPost(c.Ctx, apiUrl, body)
+	err = c.doPut(c.Ctx, apiUrl, body)
 	if err != nil {
 		g.Log().Line().Error(c.Ctx, fmt.Sprintf("Insert feed channel document failed: \n%s\n", err))
 	}

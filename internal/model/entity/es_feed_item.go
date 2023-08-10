@@ -3,6 +3,7 @@ package entity
 import "github.com/gogf/gf/v2/os/gtime"
 
 type FeedItemESData struct {
+	Ids             string      `json:"_id"`
 	Id              string      `json:"id"              ` //
 	ChannelId       string      `json:"channelId"       ` //
 	Title           string      `json:"title"           ` //

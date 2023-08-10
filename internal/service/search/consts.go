@@ -48,34 +48,42 @@ const CREATE_FEED_ITEM_INDEX_REQUEST = `
             },
             "created": {
                 "type": "date",
+                "store": true,
                 "index": false
             },
             "id": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "channelId": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "link": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "imageUrl": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "enclosureUrl": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "enclosureType": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "enclosureLength": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "duration": {
@@ -90,6 +98,7 @@ const CREATE_FEED_ITEM_INDEX_REQUEST = `
             },
             "explicit": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "season": {
@@ -99,10 +108,12 @@ const CREATE_FEED_ITEM_INDEX_REQUEST = `
             },
             "episodeType": {
                 "type": "text",
+                "store": true,
                 "index": true
             },
             "channelImageUrl": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "channelTitle": {
@@ -121,6 +132,7 @@ const CREATE_FEED_ITEM_INDEX_REQUEST = `
             },
             "feedLink": {
                 "type": "text",
+                "store": true,
                 "index": false
             }
         }
@@ -177,41 +189,51 @@ const CREATE_FEED_CHANNEL_INDEX_REQUEST = `
             },
             "id": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "link": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "feedLink": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "language": {
                 "type": "keyword",
+                "store": true,
                 "index": false
             },
             "copyright": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "imageUrl": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "ownerEmail": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "feedType": {
                 "type": "text",
+                "store": true,
                 "index": false
             },
             "categories": {
                 "type": "text",
+                "store": true,
                 "index": true
             }
         }
     }
 }
+
 `

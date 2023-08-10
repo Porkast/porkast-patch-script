@@ -153,6 +153,7 @@ func SetFeedItemsToZincsearch(ctx context.Context, feedChannel entity.FeedChanne
 		esFeedItem.ChannelTitle = feedChannel.Title
 		esFeedItem.FeedLink = feedChannel.FeedLink
 		esFeedItem.Language = feedChannel.Language
+		esFeedItem.Ids = feedItem.Id
 		esFeedItemList = append(esFeedItemList, esFeedItem)
 	}
 
