@@ -36,7 +36,7 @@ func GetFeedItemsByChannelId(ctx context.Context, channelId string) (itemList []
 	}
 
 	if len(itemList) == 0 {
-		return itemList, errors.New("The feed item is exist.")
+		return itemList, errors.New("The feed item is empty.")
 	}
 
 	return

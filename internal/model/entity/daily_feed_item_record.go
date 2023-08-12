@@ -8,12 +8,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// UserListenLater is the golang structure for table user_listen_later.
-type UserListenLater struct {
-	Id        string      `json:"id"        ` //
-	UserId    string      `json:"userId"    ` //
-	ItemId    string      `json:"itemId"    ` //
+// DailyFeedItemRecord is the golang structure for table daily_feed_item_record.
+type DailyFeedItemRecord struct {
 	ChannelId string      `json:"channelId" ` //
-	RegDate   *gtime.Time `json:"regDate"   ` //
-	Status    int         `json:"status"    ` //
+	ItemId    string      `json:"itemId"    ` //
+	PubDate   *gtime.Time `json:"pubDate"   ` //
 }

@@ -17,6 +17,7 @@ func main() {
 		&cmd.AddZincsearchIndex,
 		&cmd.PatchZincsearchData,
 		&cmd.DuplicatedChannelPatch,
+		&cmd.MigrateFeedChannelAndItemDBTable,
 	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)

@@ -141,6 +141,19 @@ var (
 			return nil
 		},
 	}
+
+	MigrateFeedChannelAndItemDBTable = gcmd.Command{
+		Name:  "MigrateFeedChannelAndItemDBTable",
+		Usage: "patch",
+		Brief: "start guoshao fm MigrateFeedChannelAndItemDBTable patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			g.Log().Line().Debug(ctx, "start guoshao fm MigrateFeedChannelAndItemDBTable patch")
+			g.Log().Line().Debug(ctx, "db host %s", g.DB().GetConfig().Host)
+			feed.MigrateFeedChannelAndItem(ctx)
+			return nil
+		},
+	}
 )
 
 func initConfig() {

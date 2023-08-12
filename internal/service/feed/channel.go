@@ -7,11 +7,15 @@ import (
 	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/internal/dao"
 	"guoshao-fm-patch/internal/service/search"
+	"strconv"
+	"sync"
 
 	"github.com/anaskhan96/soup"
+	"github.com/gogf/gf/v2/encoding/ghash"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/os/grpool"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -112,4 +116,75 @@ func FilterDuplicatedChannelInfo(ctx context.Context) {
 	resultJsonStr := gjson.MustEncodeString(duplicatedChannelList)
 	gfile.PutContents("./duplicated_channle_info.json", resultJsonStr)
 	g.Log().Line().Infof(ctx, "The duplicated channel count is %d", len(duplicatedChannelList))
+}
+
+func MigrateFeedChannelAndItem(ctx context.Context) {
+	var (
+		err             error
+		mu              = &sync.Mutex{}
+		totalCount      int
+		offset          int
+		limit           = 1000
+		channelInfoList []entity.FeedChannel
+	)
+
+	totalCount, err = dao.GetFeedChannelTotalCount(ctx)
+	if err != nil {
+		panic(err)
+	}
+	g.Log().Line().Infof(ctx, "The channel info total count is %d", totalCount)
+	for offset < totalCount {
+		feedChannelMigrateList := make([]entity.FeedChannelMigrate, 0)
+		channelInfoList, err = dao.GetChannelList(ctx, offset, limit)
+		g.Log().Line().Infof(ctx, "start from offset %d", offset)
+		offset = offset + limit
+		wg := sync.WaitGroup{}
+		pool := grpool.New(10)
+		for _, channelInfoItem := range channelInfoList {
+			wg.Add(1)
+			feedChannelTemp := channelInfoItem
+			pool.Add(ctx, func(ctx context.Context) {
+				defer wg.Done()
+				if feedChannelTemp.FeedLink == "" {
+					g.Log().Line().Infof(ctx, "The channel %s feed link is empty", feedChannelTemp.Id)
+					return
+				}
+				newId := strconv.FormatUint(ghash.RS64([]byte(feedChannelTemp.FeedLink+feedChannelTemp.Title)), 32)
+				feedChannelMigrate := entity.FeedChannelMigrate{}
+				gconv.Struct(feedChannelTemp, &feedChannelMigrate)
+				feedChannelMigrate.Ido = feedChannelTemp.Id
+				feedChannelMigrate.Id = newId
+				migrateFeedItem(ctx, feedChannelTemp.Id, newId)
+				mu.Lock()
+				feedChannelMigrateList = append(feedChannelMigrateList, feedChannelMigrate)
+				mu.Unlock()
+			})
+		}
+
+		//do insert or update MigrateFeedChannel
+		wg.Wait()
+		dao.FeedChannelMigrate.Ctx(ctx).Data(feedChannelMigrateList).Save()
+	}
+
+}
+
+func migrateFeedItem(ctx context.Context, originalChannelId, newChannelId string) (err error) {
+
+	feedItemMigrateList := make([]entity.FeedItemMigrate, 0)
+	feedItemList, err := dao.GetFeedItemsByChannelId(ctx, originalChannelId)
+	if len(feedItemList) == 0 {
+		g.Log().Line().Infof(ctx, "Feed channel %s item is empty, ignore update feed_item", originalChannelId)
+		return
+	}
+
+	for _, feedItem := range feedItemList {
+		feedItemMigrate := entity.FeedItemMigrate{}
+		gconv.Struct(feedItem, &feedItemMigrate)
+		feedItemMigrate.ChannelId = newChannelId
+		feedItemMigrateList = append(feedItemMigrateList, feedItemMigrate)
+	}
+
+	dao.FeedItemMigrate.Ctx(ctx).Data(feedItemMigrateList).Save()
+
+	return
 }
