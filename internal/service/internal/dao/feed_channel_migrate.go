@@ -5,6 +5,8 @@
 package dao
 
 import (
+	"context"
+	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/internal/dao/internal"
 )
 
@@ -22,3 +24,23 @@ var (
 )
 
 // Fill with you ideas below.
+func GetMigrateZHFeedChannelTotalCount(ctx context.Context) (count int, err error) {
+
+	count, err = FeedChannelMigrate.Ctx(ctx).Where("language like 'zh%'").Count()
+
+	return
+}
+
+func GetMigrateChannelList(ctx context.Context, offset, limit int) (entities []entity.FeedChannelMigrate, err error) {
+
+	err = FeedChannelMigrate.Ctx(ctx).Offset(offset).Limit(limit).Scan(&entities)
+
+	return
+}
+
+func GetMigrateZHFeedChannelList(ctx context.Context) (entities []entity.FeedChannel, err error) {
+
+	err = FeedChannelMigrate.Ctx(ctx).Where("language like 'zh%'").Scan(&entities)
+
+	return
+}

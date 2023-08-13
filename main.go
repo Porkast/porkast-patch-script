@@ -18,6 +18,7 @@ func main() {
 		&cmd.PatchZincsearchData,
 		&cmd.DuplicatedChannelPatch,
 		&cmd.MigrateFeedChannelAndItemDBTable,
+		&cmd.MigrateFeedChannelItemTotalCountPatch,
 	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)

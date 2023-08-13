@@ -164,3 +164,30 @@ func SetFeedItemsToZincsearch(ctx context.Context, feedChannel entity.FeedChanne
 
 	search.GetClient(ctx).InsertFeedItemBulk(bulk)
 }
+
+func GetMigrateFeedItemTotalCount(ctx context.Context) {
+	var (
+		itemTotalCount int64
+	)
+
+	channelInfoList, _ := dao.GetMigrateZHFeedChannelList(ctx)
+	wg := sync.WaitGroup{}
+	pool := grpool.New(10)
+	for _, channelItem := range channelInfoList {
+		wg.Add(1)
+		feedChannelTemp := channelItem
+		pool.Add(ctx, func(ctx context.Context) {
+			defer wg.Done()
+			count, err := dao.GetMigrateFeedItemCountByChannelId(ctx, feedChannelTemp.Id)
+			if err != nil {
+				g.Log().Line().Errorf(ctx, "Get channel %s item total count failed :\n%d", feedChannelTemp.Title, err)
+				return
+			}
+
+			g.Log().Line().Infof(ctx, "The channel %s items total count is %d", feedChannelTemp.Id, count)
+			atomic.AddInt64(&itemTotalCount, gconv.Int64(count))
+		})
+	}
+	wg.Wait()
+	g.Log().Line().Infof(ctx, "The all migrate items total count is %d", itemTotalCount)
+}

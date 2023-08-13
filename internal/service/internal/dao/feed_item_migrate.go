@@ -5,6 +5,7 @@
 package dao
 
 import (
+	"context"
 	"guoshao-fm-patch/internal/service/internal/dao/internal"
 )
 
@@ -22,3 +23,9 @@ var (
 )
 
 // Fill with you ideas below.
+func GetMigrateFeedItemCountByChannelId(ctx context.Context, channelId string) (count int, err error) {
+
+	count, err = FeedItemMigrate.Ctx(ctx).Where("channel_id=?", channelId).Count()
+
+	return
+}

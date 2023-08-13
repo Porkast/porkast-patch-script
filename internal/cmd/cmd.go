@@ -154,6 +154,18 @@ var (
 			return nil
 		},
 	}
+
+	MigrateFeedChannelItemTotalCountPatch = gcmd.Command{
+		Name:  "MigrateFeedChannelItemTotalCountPatch",
+		Usage: "patch",
+		Brief: "start guoshao fm migrate feed total count patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			g.Log().Line().Debug(ctx, "start guoshao fm migrate feed total count patch")
+			feed.GetMigrateFeedItemTotalCount(ctx)
+			return nil
+		},
+	}
 )
 
 func initConfig() {
