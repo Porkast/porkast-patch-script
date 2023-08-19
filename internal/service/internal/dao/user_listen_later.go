@@ -5,6 +5,8 @@
 package dao
 
 import (
+	"context"
+	"guoshao-fm-patch/internal/model/entity"
 	"guoshao-fm-patch/internal/service/internal/dao/internal"
 )
 
@@ -22,3 +24,9 @@ var (
 )
 
 // Fill with you ideas below.
+func GetAllListenLaterEntities(ctx context.Context) (entities []entity.UserListenLater, err error) {
+
+	UserListenLater.Ctx(ctx).Scan(&entities)
+
+	return
+}

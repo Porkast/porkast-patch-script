@@ -42,6 +42,16 @@ func GetFeedItemsByChannelId(ctx context.Context, channelId string) (itemList []
 	return
 }
 
+func GetFeedItemByChannelIdAndItemId(ctx context.Context, channelId, itemId string) (feedItem entity.FeedItem, err error) {
+
+	err = FeedItem.Ctx(ctx).Where("channel_id=? and id=?", channelId, itemId).Scan(&feedItem)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func GetFeedItemCountByChannelId(ctx context.Context, channelId string) (count int, err error) {
 
 	count, err = FeedItem.Ctx(ctx).Where("channel_id=?", channelId).Count()

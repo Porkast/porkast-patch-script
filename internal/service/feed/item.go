@@ -8,10 +8,12 @@ import (
 	"guoshao-fm-patch/internal/service/cache"
 	"guoshao-fm-patch/internal/service/internal/dao"
 	"guoshao-fm-patch/internal/service/search"
+	"strconv"
 	"sync"
 	"sync/atomic"
 
 	"github.com/anaskhan96/soup"
+	"github.com/gogf/gf/v2/encoding/ghash"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/grpool"
@@ -190,4 +192,27 @@ func GetMigrateFeedItemTotalCount(ctx context.Context) {
 	}
 	wg.Wait()
 	g.Log().Line().Infof(ctx, "The all migrate items total count is %d", itemTotalCount)
+}
+
+func MigrateListenLaterFeedItem(ctx context.Context) {
+
+	userListenLaterEntities, err := dao.GetAllListenLaterEntities(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, userListenLater := range userListenLaterEntities {
+		channelId := userListenLater.ChannelId
+		itemId := userListenLater.ItemId
+		itemInfo, err := dao.GetFeedItemByChannelIdAndItemId(ctx, channelId, itemId)
+		if err != nil {
+			g.Log().Line().Errorf(ctx, "get channel item info by channel id %s and item id %s faild:\n%s", channelId, itemId, err)
+			continue
+		}
+
+		var newItemId = strconv.FormatUint(ghash.RS64([]byte(channelId+itemInfo.Title)), 32)
+		userListenLater.ItemId = newItemId
+		dao.UserListenLater.Ctx(ctx).Save(userListenLater)
+	}
+
 }

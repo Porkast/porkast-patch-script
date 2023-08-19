@@ -120,8 +120,8 @@ func FilterDuplicatedChannelInfo(ctx context.Context) {
 
 func MigrateFeedChannelAndItem(ctx context.Context) {
 	var (
-		err             error
-		mu              = &sync.Mutex{}
+		err error
+		// mu              = &sync.Mutex{}
 		totalCount      int
 		offset          int
 		limit           = 1000
@@ -134,7 +134,7 @@ func MigrateFeedChannelAndItem(ctx context.Context) {
 	}
 	g.Log().Line().Infof(ctx, "The channel info total count is %d", totalCount)
 	for offset < totalCount {
-		feedChannelMigrateList := make([]entity.FeedChannelMigrate, 0)
+		// feedChannelMigrateList := make([]entity.FeedChannelMigrate, 0)
 		channelInfoList, err = dao.GetChannelList(ctx, offset, limit)
 		g.Log().Line().Infof(ctx, "start from offset %d", offset)
 		offset = offset + limit
@@ -155,15 +155,15 @@ func MigrateFeedChannelAndItem(ctx context.Context) {
 				feedChannelMigrate.Ido = feedChannelTemp.Id
 				feedChannelMigrate.Id = newId
 				migrateFeedItem(ctx, feedChannelTemp.Id, newId)
-				mu.Lock()
-				feedChannelMigrateList = append(feedChannelMigrateList, feedChannelMigrate)
-				mu.Unlock()
+				// mu.Lock()
+				// feedChannelMigrateList = append(feedChannelMigrateList, feedChannelMigrate)
+				// mu.Unlock()
 			})
 		}
 
 		//do insert or update MigrateFeedChannel
 		wg.Wait()
-		dao.FeedChannelMigrate.Ctx(ctx).Data(feedChannelMigrateList).Save()
+		// dao.FeedChannelMigrate.Ctx(ctx).Data(feedChannelMigrateList).Save()
 	}
 
 }
@@ -181,6 +181,8 @@ func migrateFeedItem(ctx context.Context, originalChannelId, newChannelId string
 		feedItemMigrate := entity.FeedItemMigrate{}
 		gconv.Struct(feedItem, &feedItemMigrate)
 		feedItemMigrate.ChannelId = newChannelId
+		var itemID = strconv.FormatUint(ghash.RS64([]byte(newChannelId+feedItemMigrate.Title)), 32)
+		feedItemMigrate.Id = itemID
 		feedItemMigrateList = append(feedItemMigrateList, feedItemMigrate)
 	}
 

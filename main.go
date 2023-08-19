@@ -19,6 +19,7 @@ func main() {
 		&cmd.DuplicatedChannelPatch,
 		&cmd.MigrateFeedChannelAndItemDBTable,
 		&cmd.MigrateFeedChannelItemTotalCountPatch,
+		&cmd.MigrateUserListenLaterPatch,
 	)
 	if err != nil {
 		g.Log().Line().Fatal(gctx.New(), err)

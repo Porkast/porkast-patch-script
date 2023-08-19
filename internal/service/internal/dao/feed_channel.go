@@ -49,3 +49,10 @@ func GetChannelList(ctx context.Context, offset, limit int) (entities []entity.F
 
 	return
 }
+
+func GetFeedChannelInfoByOriginalChannelId(ctx context.Context, channelId string) (feedInfo entity.FeedChannel, err error) {
+
+	err = FeedChannel.Ctx(ctx).Where("ido=?", channelId).Scan(&feedInfo)
+
+	return
+}

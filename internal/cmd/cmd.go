@@ -166,6 +166,18 @@ var (
 			return nil
 		},
 	}
+
+	MigrateUserListenLaterPatch = gcmd.Command{
+		Name:  "MigrateUserListenLaterPatch",
+		Usage: "patch",
+		Brief: "start guoshao fm migrate user listen later patch",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			initConfig()
+			g.Log().Line().Debug(ctx, "start guoshao fm migrate user listen later patch")
+			feed.MigrateListenLaterFeedItem(ctx)
+			return nil
+		},
+	}
 )
 
 func initConfig() {
